@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-color: #0F5132;
+      --secondary-color: #198754;
+      --bg-color: #F3F4F6;
+      --sidebar-width: 240px;
+      --text-color: #333;
+    }
+
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      display: flex;
+      height: 100vh;
+      color: var(--text-color);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: #ffffff;
+      border-right: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 10px;
+    }
+
+    .brand {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      padding: 0 15px 30px 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-item {
+      padding: 12px 15px;
+      margin-bottom: 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #4b5563;
+      font-weight: 500;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover { background-color: #f3f4f6; }
+    .nav-item.active { background-color: #E6F4EA; color: var(--primary-color); font-weight: 600; }
+
+    /* MAIN CONTENT */
+    .main {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 25px;
+      color: #111827;
+    }
+
+    /* CARDS */
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid #e5e7eb;
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; color: #374151; }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.1); }
+
+    /* BOTONES */
+    .btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: #0b3d26; }
+    .btn-danger { background-color: #dc3545; color: white; }
+    .btn-secondary { background-color: white; border: 1px solid #d1d5db; color: #374151; }
+    .btn-secondary:hover { background-color: #f9fafb; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* SCANNER */
+    .scanner-wrapper {
+      position: relative;
+      margin-bottom: 20px;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none; 
+    }
+    .scanner-viewport { width: 100%; height: 250px; }
+    .scanner-overlay {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        border: 2px solid rgba(255,255,255,0.5);
+        display: flex; align-items: center; justify-content: center;
+        color: white; pointer-events: none;
+    }
+
+    /* ALERTAS */
+    .alert { padding: 12px; border-radius: 6px; margin-top: 15px; display: none; }
+    .alert-success { background-color: #def7ec; color: #03543f; border: 1px solid #bcf0da; }
+    .alert-error { background-color: #fde8e8; color: #9b1c1c; border: 1px solid #fbd5d5; }
+    .alert-info { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+    /* SECCIONES */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* CHAT IA */
+    .ai-chat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; height: 300px; padding: 15px; overflow-y: auto; margin-bottom: 15px; }
+    .chat-msg { margin-bottom: 10px; padding: 10px; border-radius: 8px; max-width: 80%; }
+    .chat-bot { background: #e0f2fe; color: #0369a1; align-self: flex-start; }
+    .chat-user { background: #dcfce7; color: #166534; margin-left: auto; }
+    .suggestion-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    .chip { font-size: 0.8rem; background: #e5e7eb; padding: 5px 10px; border-radius: 15px; cursor: pointer; }
+    
+    /* TABLA */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem; }
+    th { background-color: #f9fafb; font-weight: 600; color: #374151; }
+  </style>
+</head>
+
+<body onload="initApp()">
+
+  <div class="sidebar">
+    <div class="brand">📦 QASO System</div>
+    <div class="nav-item active" onclick="showSection('dashboard', this)">📊 Dashboard</div>
+    <div class="nav-item" onclick="showSection('nuevo-producto', this)">📦 Nuevo Producto</div>
+    <div class="nav-item" onclick="showSection('movimientos', this)">aaS Movimientos</div>
+    <div class="nav-item" onclick="showSection('inventario', this)">📋 Inventario</div>
+    <div class="nav-item" onclick="showSection('reportes', this)">📈 Reportes</div>
+    <div class="nav-item" onclick="showSection('buscar', this)">🔍 Buscar</div>
+    <div class="nav-item" onclick="showSection('ia', this)">🤖 Asistente IA</div>
+    <div class="nav-item" onclick="showSection('configuracion', this)">⚙️ Configuración</div>
+  </div>
+
+  <div class="main">
+
+    <div id="dashboard" class="section active">
+      <h2 class="header-title">Dashboard</h2>
+      <div class="form-grid">
+        <div class="card">
+            <h3>Total Productos</h3>
+            <h1 id="dash-total" style="color:var(--primary-color)">0</h1>
+        </div>
+        <div class="card">
+            <h3>Total Movimientos</h3>
+            <h1 id="dash-movs" style="color:var(--primary-color)">0</h1>
+        </div>
+        <div class="card">
+            <h3>Sin Stock</h3>
+            <h1 id="dash-sinstock" style="color:#dc3545">0</h1>
+        </div>
+        <div class="card">
+            <h3>Stock Bajo</h3>
+            <h1 id="dash-bajo" style="color:#ffc107">0</h1>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Estado del Sistema</h3>
+        <button class="btn btn-primary" onclick="loadDashboard()">🔄 Actualizar Datos</button>
+      </div>
+    </div>
+
+    <div id="nuevo-producto" class="section">
+      <h2 class="header-title">Registrar Nuevo Producto</h2>
+      <div class="card">
+        <h3>Información del Producto</h3>
+        <br>
+        <form id="form-producto">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Código</label>
+              <input type="text" id="prod-codigo" placeholder="Ej: PROD-001">
+            </div>
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" id="prod-nombre" placeholder="Nombre del producto">
+            </div>
+            <div class="form-group">
+              <label>Unidad de Medida</label>
+              <select id="prod-unidad"></select>
+            </div>
+            <div class="form-group">
+              <label>Grupo</label>
+              <select id="prod-grupo"></select>
+            </div>
+            <div class="form-group">
+              <label>Stock Mínimo</label>
+              <input type="number" id="prod-min" value="0">
+            </div>
+            <div class="form-group">
+              <label>Stock Inicial (Opcional)</label>
+              <input type="number" id="prod-inicial" value="0" placeholder="Cantidad inicial">
+            </div>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button type="button" class="btn btn-primary" onclick="guardarProducto()">💾 Guardar Producto</button>
+            <button type="button" class="btn btn-secondary" onclick="limpiarForm('form-producto')">Limpiar</button>
+          </div>
+          <div id="msg-prod" class="alert"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="movimientos" class="section">
+      <h2 class="header-title">Registrar Movimiento</h2>
+      
+      <div class="card" style="margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Escáner de Código de Barras</h3>
+            <button class="btn btn-secondary" id="btn-scan-toggle" onclick="toggleScanner()">📷 Activar Cámara</button>
+        </div>
+        
+        <div id="scanner-container" class="scanner-wrapper">
+            <div id="interactive" class="scanner-viewport"></div>
+            <div class="scanner-overlay">Apunta al código de barras</div>
+        </div>
+        <div id="scan-status" style="margin-top:10px; font-weight:bold; color:var(--primary-color);"></div>
+      </div>
+
+      <div class="card">
+        <form id="form-movimiento">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Código del Producto</label>
+              <input type="text" id="mov-codigo" placeholder="Escanea o escribe">
+            </div>
+            <div class="form-group">
+              <label>Fecha</label>
+              <input type="date" id="mov-fecha">
+            </div>
+            <div class="form-group">
+              <label>Tipo de Movimiento</label>
+              <select id="mov-tipo">
+                <option value="INGRESO">Entrada (Ingreso)</option>
+                <option value="SALIDA">Salida</option>
+                <option value="AJUSTE_POSITIVO">Ajuste (+)</option>
+                <option value="AJUSTE_NEGATIVO">Ajuste (-)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Cantidad</label>
+              <input type="number" id="mov-cantidad" value="1" min="1">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Observaciones</label>
+            <textarea id="mov-obs" rows="2" placeholder="Notas sobre este movimiento..."></textarea>
+          </div>
+          
+          <div id="info-producto-scan" style="padding:10px; background:#e6f4ea; border-radius:6px; margin-bottom:15px; display:none;"></div>
+
+          <button type="button" class="btn btn-primary" onclick="guardarMovimiento()">📝 Registrar Movimiento</button>
+          <div id="msg-mov" class="alert"></div>
+        </form>
+      </div>
+    </div>
+
+    <div id="inventario" class="section">
+       <h2 class="header-title">Inventario</h2>
+       <div class="card">
+         <div style="margin-bottom:15px;">
+           <button class="btn btn-primary" onclick="cargarInventario()">🔄 Actualizar Tabla</button>
+           <button class="btn btn-secondary" onclick="cargarInventario(true)">⚠️ Ver Solo Alertas</button>
+         </div>
+         <div id="loading-inv" style="display:none; color:gray;">Cargando...</div>
+         <div id="tabla-inventario" style="overflow-x:auto;"></div>
+       </div>
+    </div>
+
+    <div id="reportes" class="section">
+      <h2 class="header-title">Reportes</h2>
+      <div class="card">
+        <div class="form-grid">
+           <div class="form-group"><label>Fecha Desde</label><input type="date" id="rep-desde"></div>
+           <div class="form-group"><label>Fecha Hasta</label><input type="date" id="rep-hasta"></div>
+           <div class="form-group"><label>Tipo</label>
+             <select id="rep-tipo">
+               <option value="">Todos</option>
+               <option value="INGRESO">Ingresos</option>
+               <option value="SALIDA">Salidas</option>
+             </select>
+           </div>
+        </div>
+        <button class="btn btn-primary" onclick="generarReporte()">📊 Generar Reporte</button>
+        <div id="tabla-reporte" style="margin-top:20px; overflow-x:auto;"></div>
+      </div>
+    </div>
+
+    <div id="buscar" class="section">
+      <h2 class="header-title">Buscar Producto</h2>
+      <div class="card">
+        <div class="form-group">
+           <input type="text" id="busqueda-txt" placeholder="Buscar por código o nombre..." onkeyup="buscarTiempoReal()">
+        </div>
+        <div id="res-busqueda" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+    <div id="ia" class="section">
+      <h2 class="header-title">Asistente Virtual</h2>
+      <div class="card">
+        <div class="ai-chat-box" id="chat-box">
+          <div class="chat-msg chat-bot">¡Hola! Soy tu Asistente. Pregúntame sobre gestión de inventario.</div>
+        </div>
+        <div class="suggestion-chips">
+            <div class="chip" onclick="askAI('¿Qué productos necesitan reposición?')">¿Qué productos necesitan reposición?</div>
+            <div class="chip" onclick="askAI('Optimización de almacén')">Optimización de almacén</div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <input type="text" id="ai-input" placeholder="Escribe tu pregunta..." onkeypress="handleEnter(event)">
+            <button class="btn btn-primary" onclick="sendAiMessage()">Enviar</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="configuracion" class="section">
+      <h2 class="header-title">Configuración</h2>
+      <div class="card">
+        <h3>Inicializar Sistema</h3>
+        <p>Si las hojas de cálculo no existen o están vacías, usa este botón para crear las cabeceras (incluyendo Stock Inicial).</p>
+        <button class="btn btn-primary" onclick="inicializarSistema()">🛠️ Inicializar Hojas</button>
+        <div id="msg-config" class="alert"></div>
+      </div>
+      <div class="card">
+        <h3>Validar Integridad</h3>
+        <button class="btn btn-secondary" onclick="validarSistema()">🔍 Validar Datos</button>
+        <div id="msg-validar" class="alert"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- LÓGICA GENERAL ---
+    function initApp() {
+        document.getElementById('mov-fecha').valueAsDate = new Date();
+        // Fechas por defecto para reportes (mes actual)
+        const hoy = new Date();
+        document.getElementById('rep-hasta').valueAsDate = hoy;
+        const mesAtras = new Date(); mesAtras.setMonth(mesAtras.getMonth() - 1);
+        document.getElementById('rep-desde').valueAsDate = mesAtras;
+        
+        loadListas();
+        loadDashboard();
+    }
+
+    function showSection(id, element) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+        
+        if(id !== 'movimientos') stopScanner();
+    }
+
+    function loadListas() {
+        google.script.run.withSuccessHandler(data => {
+            const uSelect = document.getElementById('prod-unidad');
+            const gSelect = document.getElementById('prod-grupo');
+            uSelect.innerHTML = data.unidades.map(u => `<option>${u}</option>`).join('');
+            gSelect.innerHTML = data.grupos.map(g => `<option>${g}</option>`).join('');
+        }).obtenerListas();
+    }
+    
+    function loadDashboard() {
+         google.script.run.withSuccessHandler(data => {
+             document.getElementById('dash-total').innerText = data.totalProductos;
+             document.getElementById('dash-movs').innerText = data.totalMovimientos;
+             document.getElementById('dash-sinstock').innerText = data.sinStock;
+             document.getElementById('dash-bajo').innerText = data.stockBajo;
+         }).obtenerResumen();
+    }
+
+    function mostrarAlerta(id, msg, tipo) {
+        const div = document.getElementById(id);
+        div.innerText = msg;
+        div.className = `alert ${tipo === 'success' ? 'alert-success' : 'alert-error'}`;
+        div.style.display = 'block';
+        setTimeout(() => div.style.display = 'none', 5000);
+    }
+
+    function limpiarForm(id) {
+        document.getElementById(id).reset();
+        if(id === 'form-movimiento') {
+             document.getElementById('info-producto-scan').style.display = 'none';
+             document.getElementById('mov-fecha').valueAsDate = new Date();
+        }
+    }
+
+    // --- NUEVO PRODUCTO ---
+    function guardarProducto() {
+        const btn = event.target;
+        btn.disabled = true; btn.innerText = "Guardando...";
+
+        const producto = {
+            codigo: document.getElementById('prod-codigo').value,
+            nombre: document.getElementById('prod-nombre').value,
+            unidad: document.getElementById('prod-unidad').value,
+            grupo: document.getElementById('prod-grupo').value,
+            stockMin: document.getElementById('prod-min').value,
+            stockInicial: document.getElementById('prod-inicial').value
+        };
+
+        google.script.run.withSuccessHandler(res => {
+            btn.disabled = false; btn.innerText = "💾 Guardar Producto";
+            mostrarAlerta('msg-prod', res.message, res.success ? 'success' : 'error');
+            if(res.success) limpiarForm('form-producto');
+        }).registrarProducto(producto);
+    }
+
+    // --- MOVIMIENTOS & SCANNER ---
+    let scannerIsRunning = false;
+
+    function toggleScanner() {
+        if(scannerIsRunning) stopScanner();
+        else startScanner();
+    }
+
+    function startScanner() {
+        const container = document.getElementById('scanner-container');
+        container.style.display = 'block';
+        document.getElementById('btn-scan-toggle').innerText = "🔴 Detener Cámara";
+        document.getElementById('scan-status').innerText = "Iniciando cámara...";
+
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#interactive'),
+                constraints: { facingMode: "environment" }
+            },
+            decoder: { readers: ["code_128_reader", "ean_reader", "upc_reader"] }
+        }, function(err) {
+            if (err) {
+                console.log(err);
+                document.getElementById('scan-status').innerText = "Error cámara.";
+                return;
+            }
+            Quagga.start();
+            scannerIsRunning = true;
+            document.getElementById('scan-status').innerText = "📷 Escaneando...";
+        });
+
+        Quagga.onDetected(function(result) {
+            if(!scannerIsRunning) return;
+            const code = result.codeResult.code;
+            stopScanner(); // STOP INMEDIATO
+            document.getElementById('scan-status').innerText = "✅ Código: " + code + ". Procesando...";
+            document.getElementById('mov-codigo').value = code;
+            buscarProductoBackend(code);
+        });
+    }
+
+    function stopScanner() {
+        if(scannerIsRunning) {
+            Quagga.stop();
+            scannerIsRunning = false;
+        }
+        document.getElementById('scanner-container').style.display = 'none';
+        document.getElementById('btn-scan-toggle').innerText = "📷 Activar Cámara";
+    }
+
+    function buscarProductoBackend(codigo) {
+        google.script.run.withSuccessHandler(res => {
+            const infoDiv = document.getElementById('info-producto-scan');
+            if(res.encontrado) {
+                document.getElementById('scan-status').innerText = "✅ Producto encontrado.";
+                infoDiv.style.display = 'block';
+                infoDiv.innerHTML = `<strong>${res.producto.nombre}</strong><br>Stock Actual: ${res.producto.stockActual}`;
+            } else {
+                document.getElementById('scan-status').innerText = "❌ Código no encontrado.";
+                infoDiv.style.display = 'none';
+            }
+        }).buscarProductoPorCodigo(codigo);
+    }
+
+    document.getElementById('mov-codigo').addEventListener('blur', function() {
+        if(this.value.length > 0) buscarProductoBackend(this.value);
+    });
+
+    function guardarMovimiento() {
+        const mov = {
+            codigo: document.getElementById('mov-codigo').value,
+            fecha: document.getElementById('mov-fecha').value,
+            tipo: document.getElementById('mov-tipo').value,
+            cantidad: document.getElementById('mov-cantidad').value,
+            observaciones: document.getElementById('mov-obs').value
+        };
+
+        google.script.run.withSuccessHandler(res => {
+            mostrarAlerta('msg-mov', res.message, res.success ? 'success' : 'error');
+            if(res.success) {
+                document.getElementById('mov-codigo').value = "";
+                document.getElementById('mov-cantidad').value = "1";
+                document.getElementById('info-producto-scan').style.display = 'none';
+                document.getElementById('scan-status').innerText = "";
+            }
+        }).registrarMovimiento(mov);
+    }
+
+    // --- INVENTARIO ---
+    function cargarInventario(soloAlertas = false) {
+        document.getElementById('loading-inv').style.display = 'block';
+        google.script.run.withSuccessHandler(data => {
+            document.getElementById('loading-inv').style.display = 'none';
+            let html = `<table><thead><tr><th>Código</th><th>Nombre</th><th>Stock</th><th>Estado</th></tr></thead><tbody>`;
+            
+            data.forEach(p => {
+                if(soloAlertas && p.cantidad > p.stockMin) return;
+                let color = p.cantidad <= 0 ? '#fde8e8' : (p.cantidad <= p.stockMin ? '#fef3c7' : '');
+                html += `<tr style="background:${color}"><td>${p.codigo}</td><td>${p.nombre}</td><td>${p.cantidad}</td><td>${p.cantidad<=0?'Sin Stock':p.cantidad<=p.stockMin?'Bajo':'OK'}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            document.getElementById('tabla-inventario').innerHTML = html;
+        }).obtenerStock();
+    }
+
+    // --- REPORTES ---
+    function generarReporte() {
+        const filtros = {
+            fechaDesde: document.getElementById('rep-desde').value,
+            fechaHasta: document.getElementById('rep-hasta').value,
+            tipo: document.getElementById('rep-tipo').value
+        };
+        google.script.run.withSuccessHandler(data => {
+            let html = `<table><thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Tipo</th><th>Cant</th></tr></thead><tbody>`;
+            data.forEach(m => {
+                html += `<tr><td>${m.fecha}</td><td>${m.codigo}</td><td>${m.producto}</td><td>${m.tipo}</td><td>${m.cantidad}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            document.getElementById('tabla-reporte').innerHTML = html;
+        }).obtenerHistorial(filtros);
+    }
+
+    // --- BUSQUEDA ---
+    let searchTimeout;
+    function buscarTiempoReal() {
+        clearTimeout(searchTimeout);
+        const txt = document.getElementById('busqueda-txt').value;
+        if(txt.length < 2) return;
+        
+        searchTimeout = setTimeout(() => {
+            google.script.run.withSuccessHandler(data => {
+                let html = `<table><thead><tr><th>Código</th><th>Nombre</th><th>Stock</th></tr></thead><tbody>`;
+                data.forEach(d => {
+                    // d = [codigo, nombre, unidad, grupo, min, stock]
+                    html += `<tr><td>${d[0]}</td><td>${d[1]}</td><td>${d[5]}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+                document.getElementById('res-busqueda').innerHTML = html;
+            }).buscarProducto(txt);
+        }, 500);
+    }
+
+    // --- IA ---
+    function askAI(txt) {
+        document.getElementById('ai-input').value = txt;
+        sendAiMessage();
+    }
+    function handleEnter(e) { if(e.key === 'Enter') sendAiMessage(); }
+    function sendAiMessage() {
+        const input = document.getElementById('ai-input');
+        const txt = input.value;
+        if(!txt) return;
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML += `<div class="chat-msg chat-user">${txt}</div>`;
+        input.value = "";
+        
+        // Respuesta simulada (no se debe modificar lógica interna según instrucción)
+        setTimeout(() => {
+            let resp = "Para esa consulta, te sugiero revisar el historial de movimientos.";
+            if(txt.toLowerCase().includes("reposición")) resp = "Revisa los productos marcados en amarillo en el Dashboard.";
+            chatBox.innerHTML += `<div class="chat-msg chat-bot">${resp}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }, 800);
+    }
+
+    // --- CONFIGURACIÓN ---
+    function inicializarSistema() {
+        if(confirm("¿Seguro? Esto creará las hojas necesarias.")) {
+            google.script.run.withSuccessHandler(res => {
+                mostrarAlerta('msg-config', res, 'success');
+                loadListas();
+            }).inicializarHojas();
+        }
+    }
+    function validarSistema() {
+        google.script.run.withSuccessHandler(res => {
+             if(res.errores.length > 0) mostrarAlerta('msg-validar', "Errores: " + res.errores.join(", "), 'error');
+             else mostrarAlerta('msg-validar', "Sistema Íntegro", 'success');
+        }).validarIntegridad();
+    }
+  </script>
+</body>
+</html>
